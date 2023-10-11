@@ -1,27 +1,27 @@
 use std::fmt::Debug;
 
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
-pub struct BTree<T> {
+pub struct BinaryTree<T> {
     pub value: Option<T>,
-    pub left: Option<Box<BTree<T>>>,
-    pub right: Option<Box<BTree<T>>>,
+    pub left: Option<Box<BinaryTree<T>>>,
+    pub right: Option<Box<BinaryTree<T>>>,
 }
 
-impl<T: PartialEq + PartialOrd + Clone + Debug> BTree<T> {
+impl<T: PartialEq + PartialOrd + Clone + Debug> BinaryTree<T> {
     pub fn new(value: T) -> Self {
-        BTree {
+        BinaryTree {
             value: Some(value),
             left: None,
             right: None,
         }
     }
 
-    pub fn left(mut self, node: BTree<T>) -> Self {
+    pub fn left(mut self, node: BinaryTree<T>) -> Self {
         self.left = Some(Box::new(node));
         self
     }
 
-    pub fn right(mut self, node: BTree<T>) -> Self {
+    pub fn right(mut self, node: BinaryTree<T>) -> Self {
         self.right = Some(Box::new(node));
         self
     }
@@ -67,7 +67,7 @@ impl<T: PartialEq + PartialOrd + Clone + Debug> BTree<T> {
 }
 
 fn main() {
-    let mut tree = BTree::new(4);
+    let mut tree = BinaryTree::new(4);
     tree.insert(5);
     tree.insert(3);
     tree.insert(2);
@@ -82,17 +82,27 @@ mod tests {
 
     #[test]
     fn create_new_tree() {
-        let tree = BTree::new(1);
-
-        assert_eq!(tree.value, 1);
+        let tree = BinaryTree::new(1);
+        if let Some(root) = tree.value {
+            assert_eq!(root, 1);
+        }
+        assert_eq!(tree.right, None);
+        assert_eq!(tree.left, None);
     }
 
     #[test]
     fn insert_left() {
-        let tree = BTree::new(1).left(BTree::new(2));
+        let mut tree = BinaryTree::new(2);
+        tree.insert(1);
 
-        if let Some(node) = tree.left {
-            assert_eq!(node.value, 2);
+        if let Some(root) = tree.value {
+            assert_eq!(root, 2);
+        }
+
+        if let Some(left_node) = tree.left {
+            if let Some(root) = left_node.value {
+                assert_eq!(root, 1);
+            }
         }
 
         assert_eq!(tree.right, None);
@@ -100,10 +110,16 @@ mod tests {
 
     #[test]
     fn insert_right() {
-        let tree = BTree::new(1).right(BTree::new(2));
+        let mut tree = BinaryTree::new(2);
+        tree.insert(4);
 
-        if let Some(node) = tree.right {
-            assert_eq!(node.value, 2);
+        if let Some(root) = tree.value {
+            assert_eq!(root, 2);
+        }
+        if let Some(right_node) = tree.right {
+            if let Some(root) = right_node.value {
+                assert_eq!(root, 4);
+            }
         }
 
         assert_eq!(tree.left, None);
