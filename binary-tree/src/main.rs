@@ -1,6 +1,12 @@
 use std::fmt::Debug;
 
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct TreeFindedValue<T> {
+    pub steps: i32,
+    pub value: T,
+}
+
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct BinaryTree<T> {
     pub value: Option<T>,
     pub left: Option<Box<BinaryTree<T>>>,
@@ -64,6 +70,43 @@ impl<T: PartialEq + PartialOrd + Clone + Debug> BinaryTree<T> {
             }
         }
     }
+
+    pub fn find(&self, finded_value: T, steps: i32) -> Option<TreeFindedValue<T>> {
+        if let Some(root_value) = self.value.clone() {
+            if root_value == finded_value {
+                return Some(TreeFindedValue {
+                    steps: steps,
+                    value: root_value,
+                });
+            }
+
+            if finded_value < root_value {
+                let left_node = self.left.clone();
+                if let Some(left_node_value) = left_node {
+                    let finded_value = left_node_value.find(finded_value, steps + 1);
+                    match finded_value {
+                        Some(response) => return Some(response),
+                        None => return None,
+                    }
+                }
+                return None;
+            }
+
+            if finded_value > root_value {
+                let right_node = self.right.clone();
+                if let Some(right_node_value) = right_node {
+                    let finded_value = right_node_value.find(finded_value, steps + 1);
+                    match finded_value {
+                        Some(response) => return Some(response),
+                        None => return None,
+                    }
+                }
+                return None;
+            }
+        }
+
+        None
+    }
 }
 
 fn main() {
@@ -73,7 +116,9 @@ fn main() {
     tree.insert(2);
     tree.insert(17);
 
-    dbg!(tree);
+    let finded_value = tree.find(17, 0);
+
+    dbg!(finded_value);
 }
 
 #[cfg(test)]
@@ -123,5 +168,18 @@ mod tests {
         }
 
         assert_eq!(tree.left, None);
+    }
+    #[test]
+    fn search_value() {
+        let mut tree = BinaryTree::new(4);
+        tree.insert(5);
+        tree.insert(3);
+        tree.insert(2);
+        tree.insert(17);
+
+        if let Some(root) = tree.find(17, 0) {
+            assert_eq!(root.steps, 2);
+            assert_eq!(root.value, 17);
+        }
     }
 }
